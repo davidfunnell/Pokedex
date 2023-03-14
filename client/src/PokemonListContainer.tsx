@@ -1,36 +1,41 @@
-import React from "react";
 import { useState, useEffect } from "react";
 import { pokemonData } from "./data/pokemon";
 import { Pokemon } from "./models/model";
-import styles1 from "./styles/pokemon-types.module.css";
-import styles2 from "./index.css";
 import PokeBallIcon from "./PokeBallIcon";
 import CaughtPokeBallIcon from "./CaughtPokeBall";
+import { PokemonTypeFilters } from "./PokemonTypeFilters";
+import TypeIconRender from "./TypeIconRender";
+import { PokemonColumnCreator } from "./PokemonColumnCreator";
 
 type Props = {};
-let pokemon: Pokemon;
-const data: string | null = window.localStorage.getItem("CaughtPokemonList");
-let caughtPokemonPreState: [number] | null = JSON.parse(data);
+let caughtPokemonPreState: number[] = [];
+let CaughtClass: string;
+let PokeballCaughtClass: string;
+let PokeballNotCaughtClass: string;
+let data: string | null = window.localStorage.getItem("CaughtPokemonList");
+if (data != null) {
+  caughtPokemonPreState = JSON.parse(data);
+}
 
 export const PokemonListContainer = (props: Props) => {
-  const [type1Filters, setType1Filters] = useState<[string]>(["Any"]);
-  const [type2Filters, setType2Filters] = useState<[string | null]>(["Any"]);
+  const [type1Filters, setType1Filters] = useState<string[]>(["Any"]);
+  const [type2Filters, setType2Filters] = useState<string[]>(["Any"]);
   const [type1Filter, setType1Filter] = useState<string>("Any");
   const [type2Filter, setType2Filter] = useState<string>("Any");
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [caughtPokemon, setCaughtPokemon] = useState<number[]>([]);
   const [removedPokemon, setremovedPokemon] = useState<boolean>(false);
-  const [pokemonColumns, setPokemonColumns] = useState<Pokemon[][]>([
-    [],
-    [],
-    [],
-  ]);
+  const [pokemonColumns, setPokemonColumns] = useState<Pokemon[][]>([]);
 
   useEffect(() => {
+    // when component mounts, set the current list of caught pokemon to state
     setCaughtPokemon(caughtPokemonPreState);
+    // when component mounts, collect all the type1 and type2 filters from pokemonData
+    PokemonTypeFilters(setType1Filters, setType2Filters);
   }, []);
 
   useEffect(() => {
+    // when caught pokemon list updates, update localstorage
     window.localStorage.setItem(
       "CaughtPokemonList",
       JSON.stringify(caughtPokemon)
@@ -38,76 +43,9 @@ export const PokemonListContainer = (props: Props) => {
   }, [caughtPokemon, removedPokemon]);
 
   useEffect(() => {
-    let filterType1: [string] = ["Any"];
-    let filterType2: [string | null] = ["Any"];
-
-    for (pokemon of pokemonData) {
-      if (filterType1.indexOf(pokemon.type_1) === -1) {
-        filterType1.push(pokemon.type_1);
-      }
-      if (pokemon.type_2 === null && filterType2.indexOf("None") === -1) {
-        filterType2.push("None");
-      }
-      if (
-        pokemon.type_2 != null &&
-        filterType2.indexOf(pokemon.type_2) === -1
-      ) {
-        filterType2.push(pokemon.type_2);
-      }
-    }
-    setType1Filters(filterType1);
-    setType2Filters(filterType2);
-
-    let i = 0;
-    let columns: Pokemon[][] = [[], [], []];
-    for (pokemon of pokemonData) {
-      let check_dex_num: string = pokemon.dex_number
-        .toString()
-        .slice(0, searchFilter.length);
-      let check_name: string = pokemon.name.slice(0, searchFilter.length);
-      if (check_name === searchFilter || check_dex_num == searchFilter) {
-        if (type1Filter === "Any" && type2Filter === "Any") {
-          columns[i].push(pokemon);
-          i = i + 1;
-        } else if (type1Filter === "Any" && type2Filter === pokemon.type_2) {
-          columns[i].push(pokemon);
-          i = i + 1;
-        } else if (
-          type1Filter === "Any" &&
-          type2Filter === "None" &&
-          pokemon.type_2 === null
-        ) {
-          columns[i].push(pokemon);
-          i = i + 1;
-        } else if (type1Filter === pokemon.type_1 && type2Filter === "Any") {
-          columns[i].push(pokemon);
-          i = i + 1;
-        } else if (
-          type1Filter === pokemon.type_1 &&
-          type2Filter === pokemon.type_2
-        ) {
-          columns[i].push(pokemon);
-          i = i + 1;
-        } else if (
-          type1Filter === pokemon.type_1 &&
-          type2Filter === "None" &&
-          pokemon.type_2 === null
-        ) {
-          columns[i].push(pokemon);
-          i = i + 1;
-        }
-      }
-      if (i > 2) {
-        i = 0;
-      }
-    }
+    PokemonColumnCreator(searchFilter, type1Filter, type2Filter, setPokemonColumns)
     setremovedPokemon(false);
-    setPokemonColumns(columns);
   }, [type1Filter, type2Filter, searchFilter, removedPokemon]);
-
-  let CaughtClass: string = "mb-10 components card caught";
-  let PokeballCaughtClass: string = "";
-  let PokeballNotCaughtClass: string = "";
 
   return (
     <>
@@ -200,16 +138,16 @@ export const PokemonListContainer = (props: Props) => {
 
                 return (
                   <div key={data.dex_number} className={CaughtClass}>
-                    <h5> {data.name}</h5>
-                    <p># {data.dex_number}</p>
+                    <strong>
+                      <p> {data.name}</p>
+                      <p># {data.dex_number}</p>
+                    </strong>
                     <img src={data.image_url} alt="..." />
 
                     <div
                       onClick={(e) => {
                         {
-                          caughtPokemonPreState.push(data.dex_number),
-                            setCaughtPokemon(caughtPokemonPreState),
-                            setremovedPokemon(true);
+                          setCaughtPokemon([...caughtPokemon,data.dex_number])
                         }
                       }}
                       className={PokeballNotCaughtClass}
@@ -220,28 +158,17 @@ export const PokemonListContainer = (props: Props) => {
                     <div
                       onClick={(e) => {
                         {
-                          caughtPokemonPreState = caughtPokemonPreState.filter(
-                            (e, i) => e !== data.dex_number
-                          );
-                          setCaughtPokemon(caughtPokemonPreState);
+                          setCaughtPokemon(caughtPokemon.filter(a => a != data.dex_number))
                         }
                       }}
                       className={PokeballCaughtClass}
                     >
                       <CaughtPokeBallIcon />
                     </div>
-
-                    <div
-                      className={`${styles1["type-icon"]} ${
-                        styles1[data.type_1]
-                      }`}
-                    ></div>
-
-                    <div
-                      className={`${styles1["type-icon"]} ${
-                        styles1[data.type_2]
-                      }`}
-                    ></div>
+                    <TypeIconRender
+                      type1Icon={data.type_1}
+                      type2Icon={data.type_2}
+                    />
                   </div>
                 );
               })}
@@ -249,24 +176,6 @@ export const PokemonListContainer = (props: Props) => {
           );
         })}
       </div>
-
-      {/* <div>
-        {pokemonData.map((data, index) => {
-          return (
-            <div key={index} className="card mb-3 shadow">
-              <h5 className="font_color"> {data.name}</h5>
-              <p># {data.dex_number}</p>
-              <img src={data.image_url} alt="..." />
-              <div
-                className={`${styles1["type-icon"]} ${styles1[data.type_1]}`}
-              ></div>
-              <div
-                className={`${styles1["type-icon"]} ${styles1[data.type_2]}`}
-              ></div>
-            </div>
-          );
-        })}
-      </div> */}
     </>
   );
 };
