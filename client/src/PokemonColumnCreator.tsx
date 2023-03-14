@@ -11,11 +11,11 @@ export const PokemonColumnCreator = (
   let i = 0;
   let columns: Pokemon[][] = [[], [], []];
   for (pokemon of pokemonData) {
-    let check_dex_num: string = pokemon.dex_number
+    let checkDexNum: string = pokemon.dex_number
       .toString()
       .slice(0, searchFilter.length);
-    let check_name: string = pokemon.name.slice(0, searchFilter.length);
-    if (check_name === searchFilter || check_dex_num == searchFilter) {
+    let checkName: string = pokemon.name.slice(0, searchFilter.length);
+    if (checkName === searchFilter || checkDexNum == searchFilter) {
       if (type1Filter === "Any" || type1Filter == pokemon.type_1) {
         if (
           type2Filter === "Any" ||

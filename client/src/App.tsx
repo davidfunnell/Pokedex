@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { AppHeader } from "./AppHeader";
 import { PokemonListContainer } from "./PokemonListContainer";
 
