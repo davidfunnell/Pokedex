@@ -24,7 +24,6 @@ export const PokemonListContainer = (props: Props) => {
   const [type2Filter, setType2Filter] = useState<string>("Any");
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [caughtPokemon, setCaughtPokemon] = useState<number[]>([]);
-  const [removedPokemon, setremovedPokemon] = useState<boolean>(false);
   const [pokemonColumns, setPokemonColumns] = useState<Pokemon[][]>([]);
 
   useEffect(() => {
@@ -40,12 +39,11 @@ export const PokemonListContainer = (props: Props) => {
       "CaughtPokemonList",
       JSON.stringify(caughtPokemon)
     );
-  }, [caughtPokemon, removedPokemon]);
+  }, [caughtPokemon]);
 
   useEffect(() => {
     PokemonColumnCreator(searchFilter, type1Filter, type2Filter, setPokemonColumns)
-    setremovedPokemon(false);
-  }, [type1Filter, type2Filter, searchFilter, removedPokemon]);
+  }, [type1Filter, type2Filter, searchFilter, caughtPokemon]);
 
   return (
     <>
