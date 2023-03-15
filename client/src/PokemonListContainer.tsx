@@ -35,7 +35,7 @@ export const PokemonListContainer = () => {
   }, [caughtPokemon]);
 
   useEffect(() => {
-    // when caught pokemon list, type 1 filter, type 2 filter and search filter updates, update pokemon columns
+    // update Pokemon columns when caughtPokemon list, type1Filter, type2Filter or searchFilter update
     PokemonColumnCreator(
       searchFilter,
       type1Filter,

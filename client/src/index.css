@@ -11,7 +11,7 @@
     box-shadow: theme('boxShadow.xl');
   }
   .card.caught {
-    background-color: green
+    background-color: rgb(40, 196, 92)
   }
-  
+
 }

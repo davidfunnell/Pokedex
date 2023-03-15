@@ -63,7 +63,7 @@ const PokemonColumnRender: any = ({
                         <p> {data.name}</p>
                         <p># {data.dex_number}</p>
                       </strong>
-                      <img src={data.image_url} alt="..." />
+                      <img src={data.image_url} alt={`Picture of ${data.name}`} />
                     </div>
                     <TypeIconRender
                       type1Icon={data.type_1}
